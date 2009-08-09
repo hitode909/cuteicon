@@ -35,6 +35,9 @@ var draw = function(element) {
 
 $(document).ready(function(){
     $('canvas').each(function(){
+        $(this).click(function() {
+            draw(this);
+        });
         draw(this);
     });
 });
