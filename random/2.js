@@ -4,8 +4,8 @@ var draw = function(element) {
     var canvas = element.getContext('2d');
     var size = element.height;
     var per = 2;
-    for (var i=0; i<6; i++) {
-        if (Math.random() > 0.7) per/= 2;
+    for (var i=0; i<8; i++) {
+        if (Math.random() > 0.7) per*= 2;
     }
     var length = size / per;
 
@@ -13,15 +13,15 @@ var draw = function(element) {
     var to = Math.random();
     if (from > to) {
         var tmp = to;
-        to = from;
-        from = tmp;
+        var to = from;
+        var from = tmp;
     }
 
     return next(function() {
         // 0, 1
         var result = [];
         for (var i=0; i<per*per; i++) {
-            result.push(Math.floor(Math.random()*2));
+            result.push(Math.floor(Math.random()*1.5));
         };
         return result;
     }).next(function(data) {
@@ -42,7 +42,7 @@ var draw = function(element) {
                  var cur= i / (per*per-1);
                  if (from < cur && cur < to) {
                      canvas.fillStyle = data[i];
-                     canvas.fillRect(Math.floor(i%per)*length, Math.floor(i/per)*length,length*1.1,length*1.1);
+                     canvas.fillRect(Math.floor(i%per)*length, Math.floor(i/per)*length,length,length);
                  }
         });
     });
