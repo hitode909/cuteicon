@@ -5,6 +5,15 @@ var draw = function(element) {
     var size = element.height;
     var per = Math.floor(Math.random()*31)+1;
     var length = size / per;
+
+    var from = Math.random();
+    var to = Math.random();
+    if (from > to) {
+        var tmp = to;
+        var to = from;
+        var from = tmp;
+    }
+
     return next(function() {
         // 0, 1
         var result = [];
@@ -27,8 +36,11 @@ var draw = function(element) {
     }).next(function(data) {
         // fill
         loop({begin:0, end:per*per-1, step:1}, function(i, o) {
-            canvas.fillStyle = data[i];
-            canvas.fillRect(Math.floor(i%per)*length, Math.floor(i/per)*length,length*1.1,length*1.1);
+                 var cur= i / (per*per-1);
+                 if (from < cur && cur < to) {
+                     canvas.fillStyle = data[i];
+                     canvas.fillRect(Math.floor(i%per)*length, Math.floor(i/per)*length,length*1.1,length*1.1);
+                 }
         });
     });
 };
@@ -38,6 +50,11 @@ $(document).ready(function(){
         $(this).click(function() {
             draw(this);
         });
-        draw(this);
+        var self = this;
+        loop(100, function(i, o) {
+            wait(i).next(function(){
+                draw(self);
+            });
+        });
     });
 });
