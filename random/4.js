@@ -1,5 +1,21 @@
 $.deferred.define();
 
+var filtergenerator = function() {
+    var diffs = [];
+    var multis = [];
+    for (var i=0; i < 3; i++) {
+        multis.push([Math.random(),Math.random()]);
+    }
+    return function(color) {
+        result = [];
+        for (var i=0; i < 3; i++) {
+            var filtered = Math.floor(((color[i] / 255) * multis[i][0] + (1 - color[i] / 255) * (multis[i][1])) * 255);
+            result.push(filtered);
+        }
+        return result;
+    };
+};
+var filter = filtergenerator();
 
 var draw = function(element) {
     var canvas = element.getContext('2d');
@@ -14,33 +30,12 @@ var draw = function(element) {
         if (from+per < per*per ) result.push(from+per);
         return result;
     };
-    var color = function(num) {
-        if(typeof(num)!= 'number') num = Math.floor(Math.random()*8);
+    var color = function() {
+        var num = Math.floor(Math.random()*8);
         return ('00' + num.toString(2)).substr(-3,3).split('').map(
             function(i) {return i*255;}
-        );
+            );
     };
-    var filtergenerator = function() {
-        var diffs = [];
-        var multis = [];
-        for (var i=0; i < 3; i++) {
-            diffs.push((Math.random()-0.5)*255);
-            multis.push(Math.random()*2);
-        }
-        return function(color) {
-            console.log(diffs);
-            result = [];
-            for (var i=0; i < 3; i++) {
-                var filtered = (color[i] + diffs[i]) * multis[i];
-                if (filtered < 0) filtered = 0;
-                if (filtered > 255) filtered = 255;
-                result.push(filtered);
-            }
-            return result;
-        };
-    };
-    var filter = filtergenerator();
-
     return next(function() {
         // 0
         var result = [];
@@ -61,7 +56,7 @@ var draw = function(element) {
             }
         };
         var from = Math.floor(Math.random() * per * per);
-        var fillsize = Math.floor(Math.random() * per);
+        var fillsize = Math.floor(Math.random() * per*2);
         fill(data, from, fillsize);
         return data;
     }).next(function(data) {
@@ -79,12 +74,6 @@ $(document).ready(function(){
     $('canvas').each(function(){
         $(this).click(function() {
             draw(this);
-        });
-        var self = this;
-        loop(100, function(i, o) {
-            wait(i).next(function(){
-                draw(self);
-            });
         });
     });
 });
