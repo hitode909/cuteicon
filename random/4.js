@@ -44,7 +44,6 @@ var draw = function(element) {
         if (from+per < per*per ) result.push(from+per);
         return result;
     };
-    next(function() {
         var data = [];
         for (var i=0; i<per*per; i++) {
             data.push(false);
@@ -52,10 +51,8 @@ var draw = function(element) {
 
         var fill = function(data,from, fillsize) {
             data[from] = true;
-            next(function() {
-                canvas.fillStyle = 'rgb('+$(element).data('filter')(curcolor).join(',')+')';
-                canvas.fillRect(Math.floor(from%per)*length, Math.floor(from/per)*length,length,length);
-            });
+            canvas.fillStyle = 'rgb('+$(element).data('filter')(curcolor).join(',')+')';
+            canvas.fillRect(Math.floor(from%per)*length, Math.floor(from/per)*length,length,length);
             var around = neibors(from);
             for (var i=0; i< around.length && fillsize > 0; i++) {
                 if (!data[around[i]] && Math.random() < around.length/5) {
@@ -67,12 +64,12 @@ var draw = function(element) {
         var from = Math.floor(Math.random() * per * per);
         var fillsize = Math.floor(Math.random() * per*2);
         fill(data, from, fillsize);
-        return data;
-    }).next(function() {
+
         if ($(element).hasClass("run")) {
-            draw(element);
+            next(function() {
+                draw(element);
+            });
         }
-    });
 };
 
 $(document).ready(function(){
