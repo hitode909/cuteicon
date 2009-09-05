@@ -1,5 +1,12 @@
 $.deferred.define();
 
+var color = function() {
+    var num = Math.floor(Math.random()*8);
+    return ('00' + num.toString(2)).substr(-3,3).split('').map(
+        function(i) {return i*255;}
+    );
+};
+
 var filtergenerator = function() {
     var diffs = [];
     var multis = [];
@@ -15,13 +22,20 @@ var filtergenerator = function() {
         return result;
     };
 };
-var filter = filtergenerator();
+
+var fillall = function(element) {
+    var canvas = element.getContext('2d');
+    var size = element.height;
+    canvas.fillStyle = 'rgb('+$(element).data('filter')(color()).join(',')+')';
+    canvas.fillRect(0, 0, size, size);
+};
 
 var draw = function(element) {
     var canvas = element.getContext('2d');
     var size = element.height;
-    var per = 16;
+    var per = parseInt(location.hash.replace(/^#/, '')) || 16;
     var length = size / per;
+    var curcolor = color();
     var neibors = function(from) {
         var result = [];
         if (from%per > 0 && from-1 >= 0 ) result.push(from-1);
@@ -30,26 +44,21 @@ var draw = function(element) {
         if (from+per < per*per ) result.push(from+per);
         return result;
     };
-    var color = function() {
-        var num = Math.floor(Math.random()*8);
-        return ('00' + num.toString(2)).substr(-3,3).split('').map(
-            function(i) {return i*255;}
-            );
-    };
-    return next(function() {
-        // 0
-        var result = [];
+    next(function() {
+        var data = [];
         for (var i=0; i<per*per; i++) {
-            result.push(0);
+            data.push(false);
         };
-        return result;
-    }).next(function(data) {
-    // put
+
         var fill = function(data,from, fillsize) {
-            data[from] = 1;
+            data[from] = true;
+            next(function() {
+                canvas.fillStyle = 'rgb('+$(element).data('filter')(curcolor).join(',')+')';
+                canvas.fillRect(Math.floor(from%per)*length, Math.floor(from/per)*length,length,length);
+            });
             var around = neibors(from);
             for (var i=0; i< around.length && fillsize > 0; i++) {
-                if (data[around[i]] == 0 && Math.random() < around.length/6) {
+                if (!data[around[i]] && Math.random() < around.length/5) {
                     fillsize-=1;
                     fill(data, around[i], fillsize);
                 }
@@ -59,21 +68,23 @@ var draw = function(element) {
         var fillsize = Math.floor(Math.random() * per*2);
         fill(data, from, fillsize);
         return data;
-    }).next(function(data) {
-        // fill
-        canvas.fillStyle = 'rgb('+filter(color()).join(',')+')';
-        loop({begin:0, end:per*per-1, step:1}, function(i, o) {
-            if (data[i] > 0) {
-                canvas.fillRect(Math.floor(i%per)*length, Math.floor(i/per)*length,length,length);
-            }
-        });
+    }).next(function() {
+        if ($(element).hasClass("run")) {
+            draw(element);
+        }
     });
 };
 
 $(document).ready(function(){
     $('canvas').each(function(){
         $(this).click(function() {
-            draw(this);
+            $(this).toggleClass("run");
+            if ($(this).hasClass("run")) {
+                draw(this);
+            }
         });
+        $(this).data('filter', filtergenerator());
+        fillall(this);
+        draw(this);
     });
 });
